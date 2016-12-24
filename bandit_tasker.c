@@ -19,7 +19,7 @@ int addusers(char file[9]){
 	fread(buffer,sz,1,user);
 	printf("%d\n",sz);
 	printf("%s\n", buffer); */
-	printf("Who do you want to add?");
+	printf("Who do you want to add? \n \t");
 	fgets(named, 25, stdin);
 	named[strcspn(named,"\n")] = '\0';
 	person new_user;
@@ -51,9 +51,10 @@ int printusers(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
+	printf("%-25s %s\n", "Users", "Points");
 	for(int i=0;i<sz/30;i++){
 		fread(&buffer,30,1,user);
-		printf("%-25s  %d\n",buffer.name, buffer.points);
+		printf("  %-25s  %d\n",buffer.name, buffer.points);
 
 	}	
 
@@ -66,7 +67,8 @@ int numprintusers(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	for(int i=0;i<sz/30;i++){
+	printf("%-25s %s\n", "Users", "Points");
+	for(int i=1;i<=sz/30;i++){
 		fread(&buffer,30,1,user);
 		printf("%d  %-25s  %d\n",i, buffer.name, buffer.points);
 
@@ -88,7 +90,7 @@ int delusers(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user); 
 	fseek(user,0,SEEK_SET);
-	printf("Type the number of the user you want to delete: ");
+	printf("Type the number of the user you want to delete: \n \t ");
 	fgets(choice, 3, stdin);
 	choice[strcspn(choice,"\n")] = '\0';
 	chonum = atoi(choice);
@@ -113,27 +115,32 @@ int main(){
 	char pointsfile[10] = "points.dat";
 	char choice[3];
 	while(1){
-		printf("Please select a function:\n");
+		printf("Function List:\n\n");
 		printf("\t1. Task Someone\n");
-		printf("\t2. Print Users\n");
+		printf("\t2. Print Users & Points\n");
 		printf("\t3. Add a User\n");
 		printf("\t4. Delete a User\n");
-		printf("\t5. Exit\n");
+		printf("\t5. Exit\n\n");
+		printf("Please Select A Function: \n \t");
 		fgets(choice, 3, stdin);
 		choice[strcspn(choice,"\n")] = '\0';
 		fflush(stdin);
 		if(!strcmp(choice,"1")){
+			printf("You choose option 4 Task Someone. \n \n");
 			addusers(userfile);
 				}
 		else{
 			if(!strcmp(choice,"2")){
+				printf("You choose option 2 Print All Users and Points. \n \n");
 				printusers(userfile);
 				}
 			else if(!strcmp(choice,"3")){
+					printf("You choose option 3 Add a User. \n \n ");
 					addusers(userfile);
 					}
 				else if(!strcmp(choice,"4")){
-						delusers;
+						printf("You choose option 4 Delete a User.  \n \n");
+						delusers(userfile);
 						}
 					else if(!strcmp(choice,"5")){
 							return 0;
@@ -141,6 +148,6 @@ int main(){
 						else{
 							printf("Fail\n");
 						}
-	} }
+	} printf("\n\n"); }
  }
 
