@@ -1,6 +1,7 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
+#include<time.h>
 
 typedef struct {
 	char	name[25];
@@ -33,15 +34,70 @@ int addusers(char file[9]){
 	fclose(user);
 	return 0;
 	}
-
-
-
 /*
-int randsel(points){
-
-	}
-
+int addpoint(char file[9]; int user){
+	int sz;
+	for(int i=1;i<=sz/30;i++){
+		fread(
 */
+
+int randsel(char file[9]){
+	int sz, r, diff, off, max, count, tot, flag;
+	max = 1;
+	count = 0;
+	tot = 0;
+	flag = 1;
+	char temp[12] = "user.dat.tmp";
+	FILE * user;
+	FILE * tmp;
+	person buffer;
+	time_t t;
+	srand((unsigned) time(&t));
+	user = fopen(file,"rb");
+	tmp = fopen(temp,"wb");
+	fseek(user,0L,SEEK_END);
+	sz = ftell(user);
+	fseek(user,0,SEEK_SET);
+	for(int i=0;i<sz/30;i++){
+		fread(&buffer,30,1,user);
+		tot = tot + buffer.points;
+		if(max<buffer.points){
+			max = buffer.points;
+		}
+	}
+	max++;
+	fseek(user,0,SEEK_SET);
+	off = max * sz/30;
+	printf("num: %d\n",sz/30);
+	printf("max: %d\n", max);
+	off = off - tot;
+	printf("off: %d\n",off);
+	r = rand() % off;
+	printf("r: %d\n", r);
+	printf("Step 1\n");
+	printf("%s %d", "Rand", r);
+	for(int i = 0;i<sz/30;i++){
+		fread(&buffer,30,1,user);
+		diff = max - buffer.points;
+		for(int j = 0;j<diff;j++){
+			if(flag){
+				if(count==r){
+					buffer.points++;
+					printf("  %-25s  %d\n",buffer.name, buffer.points);
+					flag = 0;
+				}
+			}
+			count++;
+		}
+		fwrite(&buffer,30,1,tmp);
+	}	
+	fclose(user);
+	fclose(tmp);
+	rename(temp,file);
+	return 0;
+}
+
+
 
 
 int printusers(char file[9]){
@@ -127,7 +183,7 @@ int main(){
 		fflush(stdin);
 		if(!strcmp(choice,"1")){
 			printf("You choose option 4 Task Someone. \n \n");
-			addusers(userfile);
+			randsel(userfile);
 				}
 		else{
 			if(!strcmp(choice,"2")){
@@ -135,7 +191,7 @@ int main(){
 				printusers(userfile);
 				}
 			else if(!strcmp(choice,"3")){
-					printf("You choose option 3 Add a User. \n \n ");
+					printf("You choose option 3 Add a User. \n \n");
 					addusers(userfile);
 					}
 				else if(!strcmp(choice,"4")){
@@ -148,6 +204,6 @@ int main(){
 						else{
 							printf("Fail\n");
 						}
-	} printf("\n\n"); }
+	} printf("------------------------------------\n"); }
  }
 
