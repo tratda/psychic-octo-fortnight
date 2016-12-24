@@ -68,14 +68,14 @@ int randsel(char file[9]){
 	max++;
 	fseek(user,0,SEEK_SET);
 	off = max * sz/30;
-	printf("num: %d\n",sz/30);
-	printf("max: %d\n", max);
+//	printf("num: %d\n",sz/30);
+//	printf("max: %d\n", max);
 	off = off - tot;
-	printf("off: %d\n",off);
+//	printf("off: %d\n",off);
 	r = rand() % off;
-	printf("r: %d\n", r);
-	printf("Step 1\n");
-	printf("%s %d", "Rand", r);
+//	printf("r: %d\n", r);
+//	printf("Step 1\n");
+//	printf("%s %d", "Rand", r);
 	for(int i = 0;i<sz/30;i++){
 		fread(&buffer,30,1,user);
 		diff = max - buffer.points;
@@ -83,6 +83,7 @@ int randsel(char file[9]){
 			if(flag){
 				if(count==r){
 					buffer.points++;
+					printf("%-25s %s\n","Person Tasked","Points");
 					printf("  %-25s  %d\n",buffer.name, buffer.points);
 					flag = 0;
 				}
@@ -182,20 +183,20 @@ int main(){
 		choice[strcspn(choice,"\n")] = '\0';
 		fflush(stdin);
 		if(!strcmp(choice,"1")){
-			printf("You choose option 4 Task Someone. \n \n");
+			printf("Task Someone \n----------------------------------- \n");
 			randsel(userfile);
 				}
 		else{
 			if(!strcmp(choice,"2")){
-				printf("You choose option 2 Print All Users and Points. \n \n");
+				printf("Display Users and Points\n----------------------------------- \n");
 				printusers(userfile);
 				}
 			else if(!strcmp(choice,"3")){
-					printf("You choose option 3 Add a User. \n \n");
+					printf("Add a User. \n----------------------------------- \n");
 					addusers(userfile);
 					}
 				else if(!strcmp(choice,"4")){
-						printf("You choose option 4 Delete a User.  \n \n");
+						printf("Delete a User.  \n----------------------------------- \n");
 						delusers(userfile);
 						}
 					else if(!strcmp(choice,"5")){
@@ -204,6 +205,6 @@ int main(){
 						else{
 							printf("Fail\n");
 						}
-	} printf("------------------------------------\n"); }
+	} printf("-----------------------------------\n"); }
  }
 
