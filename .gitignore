@@ -4,6 +4,7 @@
 #Data Files
 *.dat
 *.tmp
+*.csv
 
 # Object files
 *.o
