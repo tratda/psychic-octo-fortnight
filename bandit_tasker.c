@@ -51,7 +51,7 @@ int printusers(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	for(int i=0;i<sz/29;i++){
+	for(int i=0;i<sz/30;i++){
 		fread(&buffer,30,1,user);
 		printf("%-25s  %d\n",buffer.name, buffer.points);
 
@@ -66,7 +66,7 @@ int numprintusers(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	for(int i=0;i<sz/29;i++){
+	for(int i=0;i<sz/30;i++){
 		fread(&buffer,30,1,user);
 		printf("%d  %-25s  %d\n",i, buffer.name, buffer.points);
 
@@ -75,10 +75,34 @@ int numprintusers(char file[9]){
 	}
 
 int delusers(char file[9]){
+	int sz;
+	char  choice[4];
+	int chonum;
+	char temp[12] = "user.dat.tmp";
+	person buffer;
+	FILE * user;
+	FILE * tmp;
 	numprintusers(file);
-	
-	
+	user = fopen(file, "rb");
+	tmp = fopen(temp, "wb");
+	fseek(user,0L,SEEK_END);
+	sz = ftell(user); 
+	fseek(user,0,SEEK_SET);
+	printf("Type the number of the user you want to delete: ");
+	fgets(choice, 3, stdin);
+	choice[strcspn(choice,"\n")] = '\0';
+	chonum = atoi(choice);
+	for(int i = 1; i<=sz/30;i++){
+		fread(&buffer, 30, 1, user);
+		if(chonum!=i){
+			fwrite(&buffer, 30, 1, tmp);
+		}
 	}
+	fclose(user);
+	fclose(tmp);
+	rename(temp,file);
+	return 0;
+}
 
 
 int main(){
