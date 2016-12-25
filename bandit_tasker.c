@@ -333,8 +333,9 @@ int main(){
 		and sets up the main screen */
 	char userfile[9] = "users.dat";
 	char pointsfile[10] = "points.dat";
-	char choice[5];
+	char choice[3];
 	char choice2[3];
+	int val;
 	printf("Work with one class or everyone  \n----------------------------------- \n");
 	printf("\t1. Everyone\n");
 	printf("\t2. One Class\n");
@@ -348,24 +349,25 @@ int main(){
 	while(1){
 		printf("Select a Class\n \n");
 		printf("\t1. 2017\n\t2. 2018\n\t3. 2019\n\t4. 2020\n\t5. Exit\n\n");
-		fgets(choice2, 3, stdin);
-		choice2[strcspn(choice2,"\n")] = '\0';
+		fgets(choice, 3, stdin);
+		choice[strcspn(choice,"\n")] = '\0';
 		fflush(stdin);
-		if(!strcmp(choice2,"1")){
-			strcpy(choice,"2017");
+		printf("%s",choice);
+		if(!strcmp(choice,"1")){
+			val = 2017;
 			printf("1");
 			classsel(userfile, choice);
 		}
-		else if(!strcmp(choice2,"2")){
-			strcpy(choice,"2018");
+		else if(!strcmp(choice,"2")){
+			val = 2018;
 			classsel(userfile, choice);
 		}
-		else if(!strcmp(choice2,"3")){
-			strcpy(choice,"2019");
+		else if(!strcmp(choice,"3")){
+			val = 2019;
 			classsel(userfile, choice);
 		}
-		else if(!strcmp(choice2,"4")){
-			strcpy(choice,"2020");
+		else if(!strcmp(choice,"4")){
+			val = 2020;
 			classsel(userfile, choice);
 		}
 		else if(!strcmp(choice,"5")){
