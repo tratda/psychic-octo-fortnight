@@ -27,7 +27,7 @@ int loadcsv(char file[9]){
 	person buffer;
 	char line[1024];
 	char yeared[5];
-	printf("%-25s   %s    %s\n","Person Tasked","Year","Points");
+	printf("  %-25s  %s %s\n","Person Tasked","Year","Points");
 
 	while(fgets(line, 1024, stream)){
 		char* tmp = strdup(line);
@@ -40,7 +40,7 @@ int loadcsv(char file[9]){
 		yeared[strcspn(yeared,"\n")] = '\0';
 		new_user.year=atoi(yeared);
 		new_user.points = 0;
-		printf("  %-25s %d  %d\n",new_user.name, new_user.year, new_user.points);
+		printf("  %-25s %d  %-4d\n",new_user.name, new_user.year, new_user.points);
 		fwrite(&new_user, 30, 1, user);
 	}
 	printf("Written\n");
@@ -99,6 +99,11 @@ int randsel(char file[9]){
 	time_t t;
 	srand((unsigned) time(&t));
 	user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
 	tmp = fopen(temp,"wb");
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
@@ -128,15 +133,15 @@ int randsel(char file[9]){
 			if(flag){
 				if(count==r){
 					buffer.points++;
-					printf("%-25s   %s    %s\n","Person Tasked","Year","Points");
-					printf("  %-25s %d  %d\n",buffer.name, buffer.year, buffer.points);
+					printf("  %-25s %s  %s\n","Person Tasked","Year","Points");
+					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
 					flag = 0;
 				}
 			}
 			count++;
 		}
 		fwrite(&buffer,30,1,tmp);
-	}	
+	}
 	fclose(user);
 	fclose(tmp);
 	rename(temp,file);
@@ -150,57 +155,42 @@ int printusers(char file[9]){
 	int sz;
 	person buffer;
 	FILE * user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-					printf("%-25s   %s %s\n","Person Tasked","Year","Points");
+	printf("  %-25s %s %s\n","Person Tasked","Year","Points");
 //	printf("%-25s %s\n", "Users", "Points");
 	for(int i=0;i<sz/30;i++){
 		fread(&buffer,30,1,user);
-					printf("  %-25s %d  %d\n",buffer.name, buffer.year, buffer.points);
+					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
 //		printf("  %-25s  %d\n",buffer.name, buffer.points);
 
 	}	
 
 	}
 
-int classsel(char file[9], char func[9]){
-	printf("Help");
-	int sz;
-	FILE * user;
-	FILE * tmp;
-	person buffer;
-	char temp[12] = "year.dat";
-	char choice[5];
-	short chonum;
-	user = fopen(file,"rb");
-	tmp = fopen(temp,"wb");
-	printf("Here");
-	fseek(user, 0L, SEEK_END);
-	sz = ftell(user);
-	fseek(user,0,SEEK_SET);
-//	printf("Here");
-	for(int i = 1; i<=sz/30;i++){
-		fread(&buffer, 30, 1, user);
-		fwrite(&buffer, 30, 1, tmp);
-	}
-	fclose(tmp);
-	fclose(user);
-	function(temp);
-	} 
-
 int numprintusers(char file[9]){
 	int sz;
 	person buffer;
 	FILE * user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	printf("%-25s   %s    %s\n","Person Tasked","Year","Points");
+	printf("%s %-25s   %s  %s\n","Number", "Person Tasked","Year","Points");
 //	printf("%-25s %s\n", "Users", "Points");
 	for(int i=1;i<=sz/30;i++){
 		fread(&buffer,30,1,user);
-		printf("%d  %-25s %d  %d\n",i,buffer.name, buffer.year, buffer.points);
+		printf("%4d     %-25s %d  %4d\n",i,buffer.name, buffer.year, buffer.points);
 //		printf("%d  %-25s  %d\n",i, buffer.name, buffer.points);
 
 	}	
@@ -219,6 +209,11 @@ int addpoints(char file[9]){
 	short chonum;
 	short count;
 	user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
 	tmp = fopen(temp,"wb");
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
@@ -244,11 +239,47 @@ int addpoints(char file[9]){
 	rename(temp,file);
 }
 
+
+int delusers(char file[9]){
+	int sz;
+	char  choice[4];
+	int chonum;
+	char temp[12] = "user.dat.tmp";
+	person buffer;
+	FILE * user;
+	FILE * tmp;
+	numprintusers(file);
+	user = fopen(file, "rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
+	tmp = fopen(temp, "wb");
+	fseek(user,0L,SEEK_END);
+	sz = ftell(user); 
+	fseek(user,0,SEEK_SET);
+	printf("Type the number of the user you want to delete: \n \t ");
+	fgets(choice, 3, stdin);
+	choice[strcspn(choice,"\n")] = '\0';
+	chonum = atoi(choice);
+	for(int i = 1; i<=sz/30;i++){
+		fread(&buffer, 30, 1, user);
+		if(chonum!=i){
+			fwrite(&buffer, 30, 1, tmp);
+		}
+	}
+	fclose(user);
+	fclose(tmp);
+	rename(temp,file);
+	return 0;
+}
+
 int function(char userfile[9]){
 	char choice[3];
 	while(1){
 
-		printf("Function List:\n\n");
+		printf("Function List:\n-----------------------------------\n");
 		printf("\t1. Task Someone\n");
 		printf("\t2. Print Users & Points\n");
 		printf("\t3. Add a User\n");
@@ -295,88 +326,129 @@ int function(char userfile[9]){
 		}
 	}
 
-
-int delusers(char file[9]){
+int classsel(char file[9], short class){
+//	printf("Help");
 	int sz;
-	char  choice[4];
-	int chonum;
-	char temp[12] = "user.dat.tmp";
-	person buffer;
 	FILE * user;
 	FILE * tmp;
-	numprintusers(file);
-	user = fopen(file, "rb");
-	tmp = fopen(temp, "wb");
-	fseek(user,0L,SEEK_END);
-	sz = ftell(user); 
+	FILE * rem;
+	person buffer;
+	char temp[9] = "year.dat\0";
+	char rema[9] = "othr.dat\0"; 
+	char choice[5];
+	short chonum;
+	user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+
+	tmp = fopen(temp,"wb");
+	rem = fopen(rema,"wb");
+	fseek(user, 0L, SEEK_END);
+	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	printf("Type the number of the user you want to delete: \n \t ");
-	fgets(choice, 3, stdin);
-	choice[strcspn(choice,"\n")] = '\0';
-	chonum = atoi(choice);
+//	printf("Here");
 	for(int i = 1; i<=sz/30;i++){
 		fread(&buffer, 30, 1, user);
-		if(chonum!=i){
+		if(class==buffer.year){
 			fwrite(&buffer, 30, 1, tmp);
 		}
+		else{ fwrite(&buffer, 30, 1,rem);
+		}
+	}
+	fclose(tmp);
+	fclose(user);
+	fclose(rem);
+	function(temp);
+	user = fopen(file,"wb"); 
+	if(user==NULL){
+	fputs("File Error",stderr);
+	exit(1);
+	}
+	tmp = fopen(temp,"rb");
+	rem = fopen(rema,"rb");
+	fseek(tmp, 0L, SEEK_END);
+	sz = ftell(tmp);
+	fseek(tmp,0,SEEK_SET);
+	for(int i = 1; i<=sz/30;i++){
+		fread(&buffer, 30, 1, tmp);
+		fwrite(&buffer, 30, 1, user);
+	}
+	fseek(rem, 0L, SEEK_END);
+	sz = ftell(rem);
+	fseek(rem,0,SEEK_SET);	
+	for(int i = 1; i<=sz/30;i++){
+		fread(&buffer, 30, 1, rem);
+		fwrite(&buffer, 30, 1, user);
 	}
 	fclose(user);
 	fclose(tmp);
-	rename(temp,file);
+	fclose(rem);
+	remove(temp);
+	remove(rema);
 	return 0;
-}
+	} 
 
-
-int main(){
-	/* This is the main function it takes a data 
-		file at users.dat, a points file at at points.dat
-		and sets up the main screen */
-	char userfile[9] = "users.dat";
-	char pointsfile[10] = "points.dat";
+int classer(char file[3]){
 	char choice[3];
-	char choice2[3];
-	int val;
-	printf("Work with one class or everyone  \n----------------------------------- \n");
-	printf("\t1. Everyone\n");
-	printf("\t2. One Class\n");
-	fgets(choice2, 3, stdin);
-	choice2[strcspn(choice2,"\n")] = '\0';
-	if(!strcmp(choice2,"1")){
-		function(userfile);
-	}
-
-	else if(!strcmp(choice2,"2")){
+	short val;
 	while(1){
-		printf("Select a Class\n \n");
-		printf("\t1. 2017\n\t2. 2018\n\t3. 2019\n\t4. 2020\n\t5. Exit\n\n");
+		printf("Select a Class\n-----------------------------------\n");
+		printf("\t1. 2017\n\t2. 2018\n\t3. 2019\n\t4. 2020\n\t5. Exit\nPick a Class:\n\t");
 		fgets(choice, 3, stdin);
 		choice[strcspn(choice,"\n")] = '\0';
 		fflush(stdin);
-		printf("%s",choice);
+//		printf("%s",choice);
 		if(!strcmp(choice,"1")){
 			val = 2017;
 			printf("1");
-			classsel(userfile, choice);
 		}
 		else if(!strcmp(choice,"2")){
 			val = 2018;
-			classsel(userfile, choice);
 		}
 		else if(!strcmp(choice,"3")){
 			val = 2019;
-			classsel(userfile, choice);
 		}
 		else if(!strcmp(choice,"4")){
 			val = 2020;
-			classsel(userfile, choice);
 		}
 		else if(!strcmp(choice,"5")){
-			printf("exit");
+//			printf("exit");
 			return 0;
 			break;
 		}
 		else{printf("Nope");
 		}
+		classsel(file, val);
+
+		}
+
+}
+
+int main(){
+	/* This is the main function it takes a data 
+		file at users.dat, a points file at at points.dat
+		and sets up the main screen */
+	char userfile[9] = "user.dat";
+	char choice2[3];
+	while(1){
+		printf("Work with one class or everyone  \n----------------------------------- \n");
+		printf("\t1. Everyone\n");
+		printf("\t2. One Class\n");
+		printf("\t3. Exit\n");
+		printf("Choose an Option:\n\t");
+		fgets(choice2, 3, stdin);
+		choice2[strcspn(choice2,"\n")] = '\0';
+		if(!strcmp(choice2,"1")){
+			function(userfile);
+		}
+	
+		else if(!strcmp(choice2,"2")){
+			classer(userfile);
+		}
+		else if(!strcmp(choice2,"3")){
+			return 0;
 		}
 	}
  }
