@@ -85,9 +85,9 @@ int addusers(char file[9]){
 	return 0;
 	}
 
-
 int randsel(char file[9]){
-	int sz, r, diff, off, max, count, tot, flag;
+	char choice[3];
+	int sz, r, diff, off, max, count, tot, flag,num;
 	max = 1;
 	count = 0;
 	tot = 0;
@@ -135,6 +135,14 @@ int randsel(char file[9]){
 					buffer.points++;
 					printf("  %-25s %s  %s\n","Person Tasked","Year","Points");
 					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
+					printf("Is this acceptable?\n\t1. Yes\n\t2. No\n\t");
+					fgets(choice,3,stdin);
+					choice[strcspn(choice,"\n")] = '\0';
+					num = atoi(choice);
+					if(num==2){
+						buffer.points = buffer.points -1;
+						tot = -1;
+						}
 					flag = 0;
 				}
 			}
@@ -145,10 +153,15 @@ int randsel(char file[9]){
 	fclose(user);
 	fclose(tmp);
 	rename(temp,file);
+	if(tot==-1){
+		reset(file);
+		}
 	return 0;
 }
 
-
+int reset(char file[9]){
+		randsel(file);
+	}
 
 
 int printusers(char file[9]){
@@ -323,6 +336,8 @@ int function(char userfile[9]){
 			printf("Fail\n");
 			}
 		printf("----------------------------------------\n");
+	//	printf("Press Enter to Continue\n");
+	//	fgets(stdout,1,stdin);
 		}
 	}
 
