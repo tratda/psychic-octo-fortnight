@@ -21,6 +21,24 @@ const char* getfield(char* line, int num){
 	return NULL;
 }
 
+int renamer(char *oldfile, char *newfile){
+	FILE * old;
+	FILE * new;
+	char ch;
+	old = fopen(oldfile,"rb");
+	new = fopen(newfile,"wb");	
+	while(1){
+		ch = fgetc(old);
+		if (ch == EOF){
+			break;
+			}
+		else
+			putc(ch, new);
+	}
+	return 0;
+}			
+		
+
 int loadcsv(char file[9]){
 	FILE * stream = fopen("names.csv","rb");
 	FILE * user = fopen(file,"ab");
@@ -43,7 +61,6 @@ int loadcsv(char file[9]){
 		printf("  %-25s %d  %-4d\n",new_user.name, new_user.year, new_user.points);
 		fwrite(&new_user, 30, 1, user);
 	}
-	printf("Written\n");
 	fclose(user);
 	fclose(stream);
 	return 0;
@@ -68,7 +85,7 @@ int addusers(char file[9]){
 	printf("Who do you want to add? \n \t");
 	fgets(named, 25, stdin);
 	named[strcspn(named,"\n")] = '\0';
-	printf("What is their year?");
+	printf("What is their year? \n \t");
 	fgets(yeared, 25, stdin);
 	yeared[strcspn(yeared,"\n")] = '\0';
 	years = atoi(yeared);
@@ -87,12 +104,13 @@ int addusers(char file[9]){
 
 int randsel(char file[9]){
 	char choice[3];
-	int sz, r, diff, off, max, count, tot, flag,num;
+	int sz, r, diff, off, max, count, tot, flag,num, points;
 	max = 1;
 	count = 0;
 	tot = 0;
 	flag = 1;
-	char temp[12] = "user.dat.tmp";
+	char answer[6];
+	char temp[14] = ".user.dat.tmp";
 	FILE * user;
 	FILE * tmp;
 	person buffer;
@@ -100,10 +118,12 @@ int randsel(char file[9]){
 	srand((unsigned) time(&t));
 	user = fopen(file,"rb");
 	if(user==NULL){
-	fputs("File Missing\n",stderr);
-	exit(1);
+		fputs("File Missing\n",stderr);
+		return 1;
 	}
-
+	printf("How many points is this tasking worth?\n\t");
+	fgets(answer,3,stdin);
+	points = atoi(answer);
 	tmp = fopen(temp,"wb");
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
@@ -132,15 +152,15 @@ int randsel(char file[9]){
 		for(int j = 0;j<diff;j++){
 			if(flag){
 				if(count==r){
-					buffer.points++;
+					buffer.points = buffer.points + points;
 					printf("  %-25s %s  %s\n","Person Tasked","Year","Points");
 					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
-					printf("Is this acceptable?\n\t1. Yes\n\t2. No\n\t");
+					printf("Is this acceptable?\n\t1. Yes\n\t2. No\nPlease Select an option: \n \t");
 					fgets(choice,3,stdin);
 					choice[strcspn(choice,"\n")] = '\0';
 					num = atoi(choice);
 					if(num==2){
-						buffer.points = buffer.points -1;
+						buffer.points = buffer.points - points;
 						tot = -1;
 						}
 					flag = 0;
@@ -217,8 +237,8 @@ int addpoints(char file[9]){
 	FILE * user;
 	FILE * tmp;
 	person buffer;
-	char temp[12] = "user.dat.tmp";
-	char choice[5];
+	char temp[14] = ".user.dat.tmp";
+	char choice[10];
 	short chonum;
 	short count;
 	user = fopen(file,"rb");
@@ -232,11 +252,13 @@ int addpoints(char file[9]){
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
 	printf("Type the number of the user you want to give points to: \n \t ");
-	fgets(choice, 3, stdin);
+	fgets(choice, 8, stdin);
+//	printf("%s\n",choice);
 	choice[strcspn(choice,"\n")] = '\0';
 	chonum = atoi(choice);
 	printf("How many points do you want to add? \n \t");
-	fgets(choice,3,stdin);
+	fgets(choice,8,stdin);
+//	printf("%s\n",choice);
 	choice[strcspn(choice,"\n")] = '\0';
 	num = atoi(choice);
 	for(int i=1;i<=sz/30;i++){
@@ -250,6 +272,7 @@ int addpoints(char file[9]){
 	fclose(user);
 	fclose(tmp);
 	rename(temp,file);
+	return 0;
 }
 
 
@@ -257,7 +280,7 @@ int delusers(char file[9]){
 	int sz;
 	char  choice[4];
 	int chonum;
-	char temp[12] = "user.dat.tmp";
+	char temp[14] = ".user.dat.tmp";
 	person buffer;
 	FILE * user;
 	FILE * tmp;
@@ -333,7 +356,7 @@ int function(char userfile[9]){
 			return 0;
 				}
 		else{
-			printf("Fail\n");
+			printf("Not a Recognized Command\n");
 			}
 		printf("----------------------------------------\n");
 	//	printf("Press Enter to Continue\n");
@@ -348,8 +371,8 @@ int classsel(char file[9], short class){
 	FILE * tmp;
 	FILE * rem;
 	person buffer;
-	char temp[9] = "year.dat\0";
-	char rema[9] = "othr.dat\0"; 
+	char temp[11] = ".year.dat\0";
+	char rema[11] = ".othr.dat\0"; 
 	char choice[5];
 	short chonum;
 	user = fopen(file,"rb");
@@ -378,8 +401,8 @@ int classsel(char file[9], short class){
 	function(temp);
 	user = fopen(file,"wb"); 
 	if(user==NULL){
-	fputs("File Error",stderr);
-	exit(1);
+		printf("File Error");
+		return 1;
 	}
 	tmp = fopen(temp,"rb");
 	rem = fopen(rema,"rb");
@@ -417,7 +440,6 @@ int classer(char file[3]){
 //		printf("%s",choice);
 		if(!strcmp(choice,"1")){
 			val = 2017;
-			printf("1");
 		}
 		else if(!strcmp(choice,"2")){
 			val = 2018;
@@ -433,7 +455,7 @@ int classer(char file[3]){
 			return 0;
 			break;
 		}
-		else{printf("Nope");
+		else{printf("Not a Recognized Command\n");
 		}
 		classsel(file, val);
 
@@ -464,6 +486,9 @@ int main(){
 		}
 		else if(!strcmp(choice2,"3")){
 			return 0;
+		}
+		else{ 
+			printf("Not a Recognized Command\n");
 		}
 	}
  }
