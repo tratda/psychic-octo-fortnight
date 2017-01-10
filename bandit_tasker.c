@@ -7,37 +7,19 @@ typedef struct {
 	char	name[25];
 	short 	year;
 	short	points;
-} person; 
+} person;
 
 const char* getfield(char* line, int num){
 	const char* tok;
-	for (tok=strtok(line, ";");
+	for (tok=strtok(line, ",");
 		tok && *tok;
-		tok = strtok(NULL, ";\n"))
+		tok = strtok(NULL, ",\n"))
 	{
 		if(!--num)
 			return tok;
 	}
 	return NULL;
 }
-
-int renamer(char *oldfile, char *newfile){
-	FILE * old;
-	FILE * new;
-	char ch;
-	old = fopen(oldfile,"rb");
-	new = fopen(newfile,"wb");	
-	while(1){
-		ch = fgetc(old);
-		if (ch == EOF){
-			break;
-			}
-		else
-			putc(ch, new);
-	}
-	return 0;
-}			
-		
 
 int loadcsv(char file[9]){
 	FILE * stream = fopen("names.csv","rb");
@@ -103,14 +85,13 @@ int addusers(char file[9]){
 	}
 
 int randsel(char file[9]){
-	char choice[3];
-	int sz, r, diff, off, max, count, tot, flag,num, points;
+	char choice[5];
+	int sz, r, diff, off, max, count, tot, flag,num,result;
 	max = 1;
 	count = 0;
 	tot = 0;
 	flag = 1;
-	char answer[6];
-	char temp[14] = ".user.dat.tmp";
+	char temp[14] = "user.dat.tmp";
 	FILE * user;
 	FILE * tmp;
 	person buffer;
@@ -118,12 +99,10 @@ int randsel(char file[9]){
 	srand((unsigned) time(&t));
 	user = fopen(file,"rb");
 	if(user==NULL){
-		fputs("File Missing\n",stderr);
-		return 1;
+	fputs("File Missing\n",stderr);
+	exit(1);
 	}
-	printf("How many points is this tasking worth?\n\t");
-	fgets(answer,3,stdin);
-	points = atoi(answer);
+
 	tmp = fopen(temp,"wb");
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
@@ -152,7 +131,7 @@ int randsel(char file[9]){
 		for(int j = 0;j<diff;j++){
 			if(flag){
 				if(count==r){
-					buffer.points = buffer.points + points;
+					buffer.points++;
 					printf("  %-25s %s  %s\n","Person Tasked","Year","Points");
 					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
 					printf("Is this acceptable?\n\t1. Yes\n\t2. No\nPlease Select an option: \n \t");
@@ -160,7 +139,7 @@ int randsel(char file[9]){
 					choice[strcspn(choice,"\n")] = '\0';
 					num = atoi(choice);
 					if(num==2){
-						buffer.points = buffer.points - points;
+						buffer.points = buffer.points -1;
 						tot = -1;
 						}
 					flag = 0;
@@ -170,9 +149,22 @@ int randsel(char file[9]){
 		}
 		fwrite(&buffer,30,1,tmp);
 	}
-	fclose(user);
+
+
+	result = fclose(user);
+	if( result != 0 )
+      printf( "Could not close '%s'\n", file );
 	fclose(tmp);
-	rename(temp,file);
+	result = remove(file);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
+	result = rename(temp,file);
+	if( result != 0 )
+      printf( "Could not rename '%s'\n", temp );
+    else
+      printf( "File '%s' renamed to '%s'\n", temp, file );
 	if(tot==-1){
 		reset(file);
 		}
@@ -181,6 +173,7 @@ int randsel(char file[9]){
 
 int reset(char file[9]){
 		randsel(file);
+		return 0;
 	}
 
 
@@ -203,8 +196,9 @@ int printusers(char file[9]){
 					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
 //		printf("  %-25s  %d\n",buffer.name, buffer.points);
 
-	}	
-
+	}
+	fclose(user);
+	return 0;
 	}
 
 int numprintusers(char file[9]){
@@ -226,21 +220,78 @@ int numprintusers(char file[9]){
 		printf("%4d     %-25s %d  %4d\n",i,buffer.name, buffer.year, buffer.points);
 //		printf("%d  %-25s  %d\n",i, buffer.name, buffer.points);
 
-	}	
-
+	}
+	fclose(user);
+	return 0;
 	}
 
 int addpoints(char file[9]){
 	int sz;
-	int num;
+	int num, result;
 	numprintusers(file);
 	FILE * user;
 	FILE * tmp;
 	person buffer;
-	char temp[14] = ".user.dat.tmp";
-	char choice[10];
-	short chonum;
-	short count;
+	char temp[14] = "user.dat.tmp";
+	char choice[7];
+	int chonum;
+	int count = 0;
+	user = fopen(file,"rb");
+	if(user==NULL){
+	fputs("File Missing\n",stderr);
+	exit(1);
+	}
+	tmp = fopen(temp,"wb");
+	fseek(user,0L,SEEK_END);
+	sz = ftell(user);
+	fseek(user,0,SEEK_SET);
+	printf("Type the number of the user you want to give points to: \n \t ");
+	fgets(choice, 5, stdin);
+	choice[strcspn(choice,"\n")] = '\0';
+	chonum = atoi(choice);
+	printf("How many points do you want to add? \n \t");
+	fgets(choice,5,stdin);
+	choice[strcspn(choice,"\n")] = '\0';
+	num = atoi(choice);
+	for(int i=1;i<=sz/30;i++){
+		count++;
+		fread(&buffer, 30, 1, user);
+		if(count==chonum){
+			buffer.points+=num;
+			}
+		fwrite(&buffer, 30, 1, tmp);
+		}
+	fseek(user,0,SEEK_SET);
+	fclose(user);
+	user = fopen(file,"wb");
+	result = fclose(user);
+	if( result != 0 )
+      printf( "Could not close '%s'\n", file );
+	fclose(tmp);
+	result = remove(file);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
+	result = rename(temp,file);
+	if( result != 0 )
+      printf( "Could not rename '%s'", temp );
+    else
+      printf( "File '%s' renamed to '%s'", temp, file );
+	return 0;
+}
+
+int delpoints(char file[9]){
+	int sz;
+	int num, result;
+	numprintusers(file);
+	FILE * user;
+	FILE * tmp;
+	person buffer;
+	char temp[14] = "user.dat.tmp";
+	char choice[7];
+	int chonum;
+	int count = 0;
 	user = fopen(file,"rb");
 	if(user==NULL){
 	fputs("File Missing\n",stderr);
@@ -252,35 +303,41 @@ int addpoints(char file[9]){
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
 	printf("Type the number of the user you want to give points to: \n \t ");
-	fgets(choice, 8, stdin);
-//	printf("%s\n",choice);
+	fgets(choice, 5, stdin);
 	choice[strcspn(choice,"\n")] = '\0';
 	chonum = atoi(choice);
-	printf("How many points do you want to add? \n \t");
-	fgets(choice,8,stdin);
-//	printf("%s\n",choice);
+	printf("How many points do you want to take away? \n \t");
+	fgets(choice,5,stdin);
 	choice[strcspn(choice,"\n")] = '\0';
 	num = atoi(choice);
 	for(int i=1;i<=sz/30;i++){
 		count++;
 		fread(&buffer, 30, 1, user);
 		if(count==chonum){
-			buffer.points+=num;
+			buffer.points-=num;
 			}
 		fwrite(&buffer, 30, 1, tmp);
 		}
 	fclose(user);
 	fclose(tmp);
-	rename(temp,file);
+	result = remove(file);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
+	result = rename(temp,file);
+	if( result != 0 )
+      printf( "Could not rename '%s'", temp );
+    else
+      printf( "File '%s' renamed to '%s'", temp, file );
 	return 0;
 }
 
-
 int delusers(char file[9]){
-	int sz;
-	char  choice[4];
+	int sz, result;
+	char  choice[7];
 	int chonum;
-	char temp[14] = ".user.dat.tmp";
+	char temp[12] = "user.dat.tmp";
 	person buffer;
 	FILE * user;
 	FILE * tmp;
@@ -293,10 +350,10 @@ int delusers(char file[9]){
 
 	tmp = fopen(temp, "wb");
 	fseek(user,0L,SEEK_END);
-	sz = ftell(user); 
+	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
 	printf("Type the number of the user you want to delete: \n \t ");
-	fgets(choice, 3, stdin);
+	fgets(choice, 5, stdin);
 	choice[strcspn(choice,"\n")] = '\0';
 	chonum = atoi(choice);
 	for(int i = 1; i<=sz/30;i++){
@@ -307,7 +364,16 @@ int delusers(char file[9]){
 	}
 	fclose(user);
 	fclose(tmp);
-	rename(temp,file);
+	result = remove(file);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
+	result = rename(temp,file);
+	if( result != 0 )
+      printf( "Could not rename '%s'", temp );
+    else
+      printf( "File '%s' renamed to '%s'", temp, file );
 	return 0;
 }
 
@@ -322,7 +388,8 @@ int function(char userfile[9]){
 		printf("\t4. Delete a User\n");
 		printf("\t5. Load Many Users from a CSV file\n");
 		printf("\t6. Add Points to a User\n");
-		printf("\t7. Exit\n\n");
+		printf("\t7. Add Points to a User\n");
+		printf("\t8. Exit\n\n");
 		printf("Please Select A Function: \n \t");
 		fgets(choice, 3, stdin);
 		choice[strcspn(choice,"\n")] = '\0';
@@ -346,17 +413,22 @@ int function(char userfile[9]){
 			}
 		else if(!strcmp(choice,"5")){
 			printf("Loading from CSV.  \n---------------------------------------- \n");
-			loadcsv(userfile);
+			//loadcsv(userfile);
+			printf("This functionality has been removed in the Windows Version.\nPlease add users individually.");
 			}
 		else if(!strcmp(choice,"6")){
 			printf("Adding Points to a User.  \n---------------------------------------- \n");
 			addpoints(userfile);
 			}
 		else if(!strcmp(choice,"7")){
+			printf("Removing Points from a User.  \n---------------------------------------- \n");
+			delpoints(userfile);
+			}
+		else if(!strcmp(choice,"8")){
 			return 0;
 				}
 		else{
-			printf("Not a Recognized Command\n");
+			printf("Fail\n");
 			}
 		printf("----------------------------------------\n");
 	//	printf("Press Enter to Continue\n");
@@ -366,13 +438,13 @@ int function(char userfile[9]){
 
 int classsel(char file[9], short class){
 //	printf("Help");
-	int sz;
+	int sz, result;
 	FILE * user;
 	FILE * tmp;
 	FILE * rem;
 	person buffer;
-	char temp[11] = ".year.dat\0";
-	char rema[11] = ".othr.dat\0"; 
+	char temp[9] = "year.dat\0";
+	char rema[9] = "othr.dat\0";
 	char choice[5];
 	short chonum;
 	user = fopen(file,"rb");
@@ -399,10 +471,10 @@ int classsel(char file[9], short class){
 	fclose(user);
 	fclose(rem);
 	function(temp);
-	user = fopen(file,"wb"); 
+	user = fopen(file,"wb");
 	if(user==NULL){
-		printf("File Error");
-		return 1;
+	fputs("File Error",stderr);
+	exit(1);
 	}
 	tmp = fopen(temp,"rb");
 	rem = fopen(rema,"rb");
@@ -415,7 +487,7 @@ int classsel(char file[9], short class){
 	}
 	fseek(rem, 0L, SEEK_END);
 	sz = ftell(rem);
-	fseek(rem,0,SEEK_SET);	
+	fseek(rem,0,SEEK_SET);
 	for(int i = 1; i<=sz/30;i++){
 		fread(&buffer, 30, 1, rem);
 		fwrite(&buffer, 30, 1, user);
@@ -423,10 +495,18 @@ int classsel(char file[9], short class){
 	fclose(user);
 	fclose(tmp);
 	fclose(rem);
-	remove(temp);
-	remove(rema);
+	result = remove(temp);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
+	result = remove(rema);
+	if( result != 0 )
+      printf( "Could not remove '%s'\n", file );
+	else
+      printf( "File '%s' removed \n", file);
 	return 0;
-	} 
+	}
 
 int classer(char file[3]){
 	char choice[3];
@@ -440,6 +520,7 @@ int classer(char file[3]){
 //		printf("%s",choice);
 		if(!strcmp(choice,"1")){
 			val = 2017;
+			printf("1");
 		}
 		else if(!strcmp(choice,"2")){
 			val = 2018;
@@ -455,7 +536,7 @@ int classer(char file[3]){
 			return 0;
 			break;
 		}
-		else{printf("Not a Recognized Command\n");
+		else{printf("Nope");
 		}
 		classsel(file, val);
 
@@ -464,7 +545,7 @@ int classer(char file[3]){
 }
 
 int main(){
-	/* This is the main function it takes a data 
+	/* This is the main function it takes a data
 		file at users.dat, a points file at at points.dat
 		and sets up the main screen */
 	char userfile[9] = "user.dat";
@@ -480,16 +561,12 @@ int main(){
 		if(!strcmp(choice2,"1")){
 			function(userfile);
 		}
-	
+
 		else if(!strcmp(choice2,"2")){
 			classer(userfile);
 		}
 		else if(!strcmp(choice2,"3")){
 			return 0;
 		}
-		else{ 
-			printf("Not a Recognized Command\n");
-		}
 	}
  }
-
