@@ -27,7 +27,7 @@ int loadcsv(char file[9]){
 	person buffer;
 	char line[1024];
 	char yeared[5];
-	printf("  %-25s  %s %s\n","Person Tasked","Year","Points");
+	printf("  %-25s  %s %s\n\n","Person Tasked","Year","Points");
 
 	while(fgets(line, 1024, stream)){
 		char* tmp = strdup(line);
@@ -83,8 +83,18 @@ int addusers(char file[9]){
 	fclose(user);
 	return 0;
 	}
+int randselor(char file[9]){
+	char choice[7];
+	int num;
+	printf("How many points is this tasking worth? \n \t");
+	fgets(choice,5,stdin);
+	choice[strcspn(choice,"\n")] = '\0';
+	num = atoi(choice);
+	randsel(file, num);
+	return 0;
+}
 
-int randsel(char file[9]){
+int randsel(char file[9], int points){
 	char choice[5];
 	int sz, r, diff, off, max, count, tot, flag,num,result;
 	max = 1;
@@ -114,6 +124,7 @@ int randsel(char file[9]){
 			max = buffer.points;
 		}
 	}
+
 	max++;
 	fseek(user,0,SEEK_SET);
 	off = max * sz/30;
@@ -131,7 +142,7 @@ int randsel(char file[9]){
 		for(int j = 0;j<diff;j++){
 			if(flag){
 				if(count==r){
-					buffer.points++;
+					buffer.points+= points;
 					printf("  %-25s %s  %s\n","Person Tasked","Year","Points");
 					printf("  %-25s %d  %4d\n",buffer.name, buffer.year, buffer.points);
 					printf("Is this acceptable?\n\t1. Yes\n\t2. No\nPlease Select an option: \n \t");
@@ -139,7 +150,7 @@ int randsel(char file[9]){
 					choice[strcspn(choice,"\n")] = '\0';
 					num = atoi(choice);
 					if(num==2){
-						buffer.points = buffer.points -1;
+						buffer.points = buffer.points - points;
 						tot = -1;
 						}
 					flag = 0;
@@ -166,13 +177,13 @@ int randsel(char file[9]){
     else
       printf( "File '%s' renamed to '%s'\n", temp, file );
 	if(tot==-1){
-		reset(file);
+		reset(file, points);
 		}
 	return 0;
 }
 
-int reset(char file[9]){
-		randsel(file);
+int reset(char file[9], int num){
+		randsel(file, num);
 		return 0;
 	}
 
@@ -302,7 +313,7 @@ int delpoints(char file[9]){
 	fseek(user,0L,SEEK_END);
 	sz = ftell(user);
 	fseek(user,0,SEEK_SET);
-	printf("Type the number of the user you want to give points to: \n \t ");
+	printf("Type the number of the user you want to take the points from: \n \t ");
 	fgets(choice, 5, stdin);
 	choice[strcspn(choice,"\n")] = '\0';
 	chonum = atoi(choice);
@@ -388,7 +399,7 @@ int function(char userfile[9]){
 		printf("\t4. Delete a User\n");
 		printf("\t5. Load Many Users from a CSV file\n");
 		printf("\t6. Add Points to a User\n");
-		printf("\t7. Add Points to a User\n");
+		printf("\t7. Remove Points to a User\n");
 		printf("\t8. Exit\n\n");
 		printf("Please Select A Function: \n \t");
 		fgets(choice, 3, stdin);
@@ -396,7 +407,7 @@ int function(char userfile[9]){
 		fflush(stdin);
 		if(!strcmp(choice,"1")){
 			printf("Task Someone \n---------------------------------------- \n");
-			randsel(userfile);
+			randselor(userfile);
 		//	loadcsv(userfile);
 			}
 		else if(!strcmp(choice,"2")){
